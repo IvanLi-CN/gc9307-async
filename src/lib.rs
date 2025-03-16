@@ -1,10 +1,9 @@
 #![no_std]
 
 use core::convert::Infallible;
-use core::future::Future;
 use core::marker::PhantomData;
 
-use embedded_graphics_core::pixelcolor::{raw::RawU16, Rgb565};
+use embedded_graphics_core::pixelcolor::{Rgb565, raw::RawU16};
 use embedded_graphics_core::prelude::RawData;
 use embedded_hal::digital::OutputPin;
 #[cfg(not(feature = "async"))]
@@ -422,8 +421,13 @@ where
     }
 }
 
+#[maybe_async_cfg::maybe(
+    sync(cfg(not(feature = "async")), self = "Timer",),
+    async(feature = "async", keep_self)
+)]
 /// The timer trait to implement by the user application.
 pub trait Timer {
     /// Expire after the specified number of milliseconds.
-    fn after_millis(milliseconds: u64) -> impl Future<Output = ()>;
+
+    fn after_millis(milliseconds: u64) -> impl core::future::Future<Output = ()>;
 }
