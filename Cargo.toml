@@ -1,8 +1,8 @@
 [package]
 name = "gc9307-async"
-version = "0.1.0"
+version = "0.0.0"
 authors = ["Ivan Li <ivanli2048@gmail.com>"]
-edition = "2021"
+edition = "2024"
 license = "MIT"
 categories = ["embedded", "embedded-hal-driver", "no-std", "gc9307", "graphics"]
 
