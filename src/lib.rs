@@ -100,10 +100,10 @@ pub enum Instruction {
 
 #[derive(Clone, Copy)]
 pub enum Orientation {
-    Portrait = 0x00,
+    Portrait = 0x40,
     Landscape = 0x20,
-    PortraitSwapped = 0xC0,
-    LandscapeSwapped = 0xA0,
+    PortraitSwapped = 0x80,
+    LandscapeSwapped = 0xE0,
 }
 
 #[derive(Clone, Copy)]
