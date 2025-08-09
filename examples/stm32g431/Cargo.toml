@@ -1,0 +1,65 @@
+[package]
+name = "gc9307-stm32g431-example"
+version = "0.1.0"
+edition = "2021"
+authors = ["Ivan Li <ivanli2048@gmail.com>"]
+license = "MIT OR Apache-2.0"
+description = "GC9307 display test patterns example for STM32G431"
+
+[dependencies]
+defmt = "1.0.1"
+defmt-rtt = "1.0.0"
+panic-probe = { version = "0.3", features = ["print-defmt"] }
+
+cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
+cortex-m-rt = "0.7.0"
+
+embassy-executor = { git = "https://github.com/embassy-rs/embassy.git", rev = "94f9b2707486ca3eade5bf4b237edf3d6aa90f35", features = [
+  "arch-cortex-m",
+  "executor-thread",
+  "defmt",
+] }
+embassy-time = { git = "https://github.com/embassy-rs/embassy.git", rev = "94f9b2707486ca3eade5bf4b237edf3d6aa90f35", features = [
+  "defmt",
+  "defmt-timestamp-uptime",
+  "tick-hz-32_768",
+] }
+embassy-stm32 = { git = "https://github.com/embassy-rs/embassy.git", rev = "94f9b2707486ca3eade5bf4b237edf3d6aa90f35", features = [
+  "defmt",
+  "time-driver-any",
+  "stm32g431cb",
+  "memory-x",
+  "unstable-pac",
+  "exti",
+] }
+embassy-sync = { git = "https://github.com/embassy-rs/embassy.git", rev = "94f9b2707486ca3eade5bf4b237edf3d6aa90f35", features = [
+  "defmt",
+] }
+embassy-embedded-hal = { git = "https://github.com/embassy-rs/embassy.git", rev = "94f9b2707486ca3eade5bf4b237edf3d6aa90f35" }
+
+embedded-graphics = "0.8.1"
+embedded-hal = "1.0.0"
+embedded-hal-async = "1.0.0"
+static_cell = "2.1.0"
+
+# Use the local gc9307-async crate
+gc9307-async = { path = "../..", features = ["async"] }
+
+[profile.dev]
+# Rust debug is too slow.
+# For debug builds always builds with some optimization
+opt-level = 1
+debug = 2
+debug-assertions = true
+incremental = false
+lto = false
+overflow-checks = true
+
+[profile.release]
+codegen-units = 1        # LLVM can perform better optimizations using a single thread
+debug = 2
+debug-assertions = false
+incremental = false
+lto = 'fat'
+opt-level = 's'
+overflow-checks = false
