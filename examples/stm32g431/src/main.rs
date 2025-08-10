@@ -31,8 +31,8 @@ impl gc9307_async::Timer for EmbassyTimer {
     }
 }
 
-// Helper function to fill the current address window with a color
-// Since we can't access private methods, we'll use write_area as a workaround
+// Helper function to fill a rectangular area with a color using chunked rendering
+// This avoids the pixel limit issue by breaking large areas into smaller chunks
 async fn fill_current_window<SPI, DC, RST>(
     display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>,
     color: Rgb565,
@@ -55,20 +55,60 @@ where
 
     let total_pixels = (width as usize) * (height as usize);
 
-    if total_pixels > MAX_PIXELS {
-        // For large areas, fall back to fill_color (which fills entire screen)
-        return display.fill_color(color).await;
+    info!("fill_current_window: {}x{} = {} pixels (max: {})", width, height, total_pixels, MAX_PIXELS);
+
+    // If the area is small enough, draw it in one go
+    if total_pixels <= MAX_PIXELS {
+        info!("Using single-pass rendering");
+        // Calculate bitmap data size for 1-bit bitmap (1 bit per pixel)
+        let bytes_needed = (total_pixels + 7) / 8; // Round up to nearest byte
+
+        // Create bitmap data filled with 0xFF (all pixels are foreground color)
+        let bitmap_data = [0xFF_u8; MAX_BITMAP_BYTES];
+        let actual_bytes = bytes_needed.min(MAX_BITMAP_BYTES);
+
+        // Use write_area to draw the filled rectangle
+        return display.write_area(x, y, width, &bitmap_data[..actual_bytes], color, Rgb565::BLACK).await;
     }
 
-    // Calculate bitmap data size for 1-bit bitmap (1 bit per pixel)
-    let bytes_needed = (total_pixels + 7) / 8; // Round up to nearest byte
+    // For large areas, break into horizontal chunks
+    // Calculate optimal chunk height to stay within pixel limits
+    let max_chunk_height = MAX_PIXELS / (width as usize);
+    let chunk_height = max_chunk_height.min(height as usize) as u16;
 
-    // Create bitmap data filled with 0xFF (all pixels are foreground color)
-    let bitmap_data = [0xFF_u8; MAX_BITMAP_BYTES];
-    let actual_bytes = bytes_needed.min(MAX_BITMAP_BYTES);
+    info!("Chunked rendering: {}x{} area, chunk height: {}", width, height, chunk_height);
 
-    // Use write_area to draw the filled rectangle
-    display.write_area(x, y, width, &bitmap_data[..actual_bytes], color, Rgb565::BLACK).await
+    let mut current_y = y;
+    let mut remaining_height = height;
+
+    while remaining_height > 0 {
+        let current_chunk_height = remaining_height.min(chunk_height);
+        let chunk_pixels = (width as usize) * (current_chunk_height as usize);
+        let bytes_needed = (chunk_pixels + 7) / 8;
+
+        // Create bitmap data for this chunk
+        let bitmap_data = [0xFF_u8; MAX_BITMAP_BYTES];
+        let actual_bytes = bytes_needed.min(MAX_BITMAP_BYTES);
+
+        // Draw this chunk
+        if let Err(e) = display.write_area(
+            x,
+            current_y,
+            width,
+            &bitmap_data[..actual_bytes],
+            color,
+            Rgb565::BLACK
+        ).await {
+            error!("Failed to draw chunk at y={}", current_y);
+            return Err(e);
+        }
+
+        // Move to next chunk
+        current_y += current_chunk_height;
+        remaining_height -= current_chunk_height;
+    }
+
+    Ok(())
 }
 
 #[embassy_executor::main]
