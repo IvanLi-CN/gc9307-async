@@ -30,7 +30,6 @@ const BLUE: u16 = 0x001F;
 const WHITE: u16 = 0xFFFF;
 const BLACK: u16 = 0x0000;
 const YELLOW: u16 = 0xFFE0;
-const CYAN: u16 = 0x07FF;
 
 // 12x16 bitmap font for digits 0-9 and degree symbol
 // Each character is 12 pixels wide, 16 pixels tall
