@@ -6,6 +6,11 @@ authors = ["Ivan Li <ivanli2048@gmail.com>"]
 license = "MIT OR Apache-2.0"
 description = "GC9307 display test patterns example for STM32G431"
 
+[features]
+default = ["software-rotation", "font-rendering"]
+software-rotation = ["gc9307-async/software-rotation"]
+font-rendering = ["gc9307-async/font-rendering"]
+
 [dependencies]
 defmt = "1.0.1"
 defmt-rtt = "1.0.0"
@@ -42,8 +47,8 @@ embedded-hal = "1.0.0"
 embedded-hal-async = "1.0.0"
 static_cell = "2.1.0"
 
-# Use the local gc9307-async crate
-gc9307-async = { path = "../..", features = ["async"] }
+# Use the local gc9307-async crate with software rotation and font rendering
+gc9307-async = { path = "../..", features = ["async", "software-rotation", "font-rendering"] }
 
 [profile.dev]
 # Rust debug is too slow.

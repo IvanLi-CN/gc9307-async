@@ -10,11 +10,22 @@ use embassy_sync::{blocking_mutex::raw::CriticalSectionRawMutex, mutex::Mutex};
 use embassy_embedded_hal::shared_bus::asynch::spi::SpiDevice;
 use embassy_time;
 use embedded_graphics::pixelcolor::Rgb565;
-use embedded_graphics::prelude::RgbColor;
 
 use gc9307_async::{Config as DisplayConfig, GC9307C, Orientation};
+#[cfg(feature = "software-rotation")]
+use gc9307_async::Rotation;
 use static_cell::StaticCell;
 use {defmt_rtt as _, panic_probe as _};
+
+// RGB565 color constants (from successful examples)
+const RED: Rgb565 = Rgb565::new(31, 0, 0);
+const GREEN: Rgb565 = Rgb565::new(0, 63, 0);
+const BLUE: Rgb565 = Rgb565::new(0, 0, 31);
+const WHITE: Rgb565 = Rgb565::new(31, 63, 31);
+const BLACK: Rgb565 = Rgb565::new(0, 0, 0);
+const YELLOW: Rgb565 = Rgb565::new(31, 63, 0);
+const CYAN: Rgb565 = Rgb565::new(0, 63, 31);
+const MAGENTA: Rgb565 = Rgb565::new(31, 0, 31);
 
 // Display buffer - needs to be static for the lifetime requirement
 static mut DISPLAY_BUFFER: [u8; gc9307_async::BUF_SIZE] = [0; gc9307_async::BUF_SIZE];
@@ -26,101 +37,37 @@ static DISPLAY_SPI_BUS: StaticCell<Mutex<CriticalSectionRawMutex, Spi<'static, e
 struct EmbassyTimer;
 
 impl gc9307_async::Timer for EmbassyTimer {
-    async fn after_millis(milliseconds: u64) {
+    async fn delay_ms(milliseconds: u64) {
         embassy_time::Timer::after_millis(milliseconds).await;
     }
 }
 
-// Helper function to fill a rectangular area with a color using chunked rendering
-// This avoids the pixel limit issue by breaking large areas into smaller chunks
-async fn fill_current_window<SPI, DC, RST>(
-    display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>,
-    color: Rgb565,
-    x: u16,
-    y: u16,
-    width: u16,
-    height: u16,
-) -> Result<(), gc9307_async::Error<SPI::Error>>
+/// Test 1: RGB Colors only (simplified)
+async fn test_rgb_colors<SPI, DC, RST>(display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>)
 where
     SPI: embedded_hal_async::spi::SpiDevice,
     DC: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
     RST: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
 {
-    // The write_area method has a limitation: it can only handle MAX_DATA_LEN pixels
-    // MAX_DATA_LEN = BUF_SIZE / 2 = 24 * 48 * 2 / 2 = 1152 pixels
-    // Each byte in the bitmap represents 8 pixels, so max bitmap size is 1152/8 = 144 bytes
+    let colors = [RED, GREEN, BLUE];
+    let color_names = ["Red", "Green", "Blue"];
 
-    const MAX_PIXELS: usize = 1152; // gc9307_async::BUF_SIZE / 2
-    const MAX_BITMAP_BYTES: usize = MAX_PIXELS / 8; // 144 bytes
-
-    let total_pixels = (width as usize) * (height as usize);
-
-    info!("fill_current_window: {}x{} = {} pixels (max: {})", width, height, total_pixels, MAX_PIXELS);
-
-    // If the area is small enough, draw it in one go
-    if total_pixels <= MAX_PIXELS {
-        info!("Using single-pass rendering");
-        // Calculate bitmap data size for 1-bit bitmap (1 bit per pixel)
-        let bytes_needed = (total_pixels + 7) / 8; // Round up to nearest byte
-
-        // Create bitmap data filled with 0xFF (all pixels are foreground color)
-        let bitmap_data = [0xFF_u8; MAX_BITMAP_BYTES];
-        let actual_bytes = bytes_needed.min(MAX_BITMAP_BYTES);
-
-        // Use write_area to draw the filled rectangle
-        return display.write_area(x, y, width, &bitmap_data[..actual_bytes], color, Rgb565::BLACK).await;
+    for (i, &color) in colors.iter().enumerate() {
+        info!("Filling with {}", color_names[i]);
+        let _ = display.fill_screen(color).await;
+        embassy_time::Timer::after_millis(800).await; // Faster transitions
     }
-
-    // For large areas, break into horizontal chunks
-    // Calculate optimal chunk height to stay within pixel limits
-    let max_chunk_height = MAX_PIXELS / (width as usize);
-    let chunk_height = max_chunk_height.min(height as usize) as u16;
-
-    info!("Chunked rendering: {}x{} area, chunk height: {}", width, height, chunk_height);
-
-    let mut current_y = y;
-    let mut remaining_height = height;
-
-    while remaining_height > 0 {
-        let current_chunk_height = remaining_height.min(chunk_height);
-        let chunk_pixels = (width as usize) * (current_chunk_height as usize);
-        let bytes_needed = (chunk_pixels + 7) / 8;
-
-        // Create bitmap data for this chunk
-        let bitmap_data = [0xFF_u8; MAX_BITMAP_BYTES];
-        let actual_bytes = bytes_needed.min(MAX_BITMAP_BYTES);
-
-        // Draw this chunk
-        if let Err(e) = display.write_area(
-            x,
-            current_y,
-            width,
-            &bitmap_data[..actual_bytes],
-            color,
-            Rgb565::BLACK
-        ).await {
-            error!("Failed to draw chunk at y={}", current_y);
-            return Err(e);
-        }
-
-        // Move to next chunk
-        current_y += current_chunk_height;
-        remaining_height -= current_chunk_height;
-    }
-
-    Ok(())
 }
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    info!("GC9307 Display Test Patterns Example Starting...");
+    info!("GC9307 Enhanced Display Test Starting...");
 
     let p = embassy_stm32::init(Default::default());
-    
-    // Configure SPI1 for display communication
-    // SCK: PA5, MOSI: PA7
+
+    // Configure SPI1 for display communication (maximum safe speed)
     let mut spi_config = Config::default();
-    spi_config.frequency = Hertz(10_000_000); // 10MHz
+    spi_config.frequency = Hertz(16_000_000); // 16MHz - maximum for 16MHz system clock
 
     let spi_bus = Spi::new_txonly(
         p.SPI1,
@@ -134,26 +81,26 @@ async fn main(_spawner: Spawner) {
     let spi_bus = Mutex::new(spi_bus);
     let spi_bus = DISPLAY_SPI_BUS.init(spi_bus);
 
-    // Configure control pins (from reference project)
+    // Configure control pins (same as successful examples)
     let dc = Output::new(p.PC14, Level::Low, Speed::High);   // Data/Command
     let rst = Output::new(p.PC15, Level::Low, Speed::High);  // Reset
     let cs = Output::new(p.PA15, Level::High, Speed::High);  // Chip Select
 
     // Create SPI device with chip select
     let spi = SpiDevice::new(spi_bus, cs);
-    
-    // Configure display
+
+    // Configure display with correct dimensions
     let display_config = DisplayConfig {
         rgb: false,
         inverted: false,
         orientation: Orientation::Landscape,
-        height: 172,
-        width: 320,
-        dx: 0,
-        dy: 34,
+        height: 172,  // Physical height in landscape mode
+        width: 320,   // Physical width in landscape mode
+        dx: 0,        // No X offset
+        dy: 34,       // Y offset as per successful examples
     };
-    
-    // Initialize display
+
+    // Initialize display with new simplified constructor
     let buffer = unsafe { &mut *core::ptr::addr_of_mut!(DISPLAY_BUFFER) };
     let mut display = GC9307C::<_, _, _, EmbassyTimer>::new(
         display_config,
@@ -162,94 +109,62 @@ async fn main(_spawner: Spawner) {
         rst,
         buffer,
     );
-    
+
     info!("Initializing display...");
     if let Err(_e) = display.init().await {
         error!("Display initialization failed");
         return;
     }
     info!("Display initialized successfully!");
-    
-    // Main loop - cycle through test patterns
-    let mut pattern_index = 0;
+
+    // Simplified test loop - only essential tests
+    let mut test_index = 0;
     loop {
-        match pattern_index {
+        match test_index {
             0 => {
-                info!("Drawing solid colors...");
-                draw_solid_colors(&mut display).await;
+                info!("Test 1: RGB Colors");
+                test_rgb_colors(&mut display).await;
             }
             1 => {
-                info!("Drawing color stripes...");
-                draw_color_stripes(&mut display).await;
+                info!("Test 2: Color Stripes");
+                test_color_stripes(&mut display).await;
             }
             2 => {
-                info!("Drawing checkerboard...");
-                draw_checkerboard(&mut display).await;
+                info!("Test 3: Checkerboard");
+                test_checkerboard(&mut display).await;
             }
             3 => {
-                info!("Drawing nested rectangles...");
-                draw_nested_rectangles(&mut display).await;
+                info!("Test 4: Direction Markers");
+                test_direction_markers(&mut display).await;
             }
-            _ => pattern_index = 0,
+            _ => test_index = 0,
         }
-        
-        pattern_index = (pattern_index + 1) % 4;
-        // Wait 3 seconds before next pattern
-        embassy_time::Timer::after_secs(3).await;
+
+        test_index = (test_index + 1) % 4;
+        embassy_time::Timer::after_secs(2).await; // Faster cycling
     }
 }
 
-// Draw solid colors: Red, Green, Blue
-async fn draw_solid_colors<SPI, DC, RST>(
-    display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>
-) where
+/// Test 2: Vertical color stripes (from direct-spi example)
+async fn test_color_stripes<SPI, DC, RST>(display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>)
+where
     SPI: embedded_hal_async::spi::SpiDevice,
     DC: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
     RST: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
 {
-    let colors = [
-        Rgb565::RED,
-        Rgb565::GREEN, 
-        Rgb565::BLUE,
-    ];
-    
-    for color in colors.iter() {
-        info!("Filling with color");
-        if let Err(_e) = display.fill_color(*color).await {
-            error!("Failed to fill color");
-        }
-        embassy_time::Timer::after_millis(1000).await; // 1 second per color
-    }
-}
-
-// Draw vertical color stripes using proper address window filling
-async fn draw_color_stripes<SPI, DC, RST>(
-    display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>
-) where
-    SPI: embedded_hal_async::spi::SpiDevice,
-    DC: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
-    RST: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
-{
-    let colors = [
-        Rgb565::RED,
-        Rgb565::GREEN,
-        Rgb565::BLUE,
-        Rgb565::YELLOW,
-        Rgb565::CYAN,
-        Rgb565::MAGENTA,
-        Rgb565::WHITE,
-    ];
+    info!("Drawing vertical color stripes...");
 
     // Clear screen first
-    let _ = display.fill_color(Rgb565::BLACK).await;
+    let _ = display.fill_screen(BLACK).await;
     embassy_time::Timer::after_millis(100).await;
 
+    let colors = [RED, GREEN, BLUE, YELLOW, CYAN, MAGENTA, WHITE];
     let stripe_width = 320 / colors.len() as u16; // ~45 pixels per stripe
 
     info!("Drawing {} vertical stripes, each {} pixels wide", colors.len(), stripe_width);
 
-    // Draw each stripe as a rectangle
-    for (i, color) in colors.iter().enumerate() {
+    // Draw each stripe
+    for (i, &color) in colors.iter().enumerate() {
         let x_start = i as u16 * stripe_width;
         let width = if i == colors.len() - 1 {
             320 - x_start // Last stripe fills to the edge
@@ -259,14 +174,7 @@ async fn draw_color_stripes<SPI, DC, RST>(
 
         info!("Drawing stripe {} at x={}, width={}", i, x_start, width);
 
-        // Set address window for this stripe
-        if let Err(_e) = display.set_address_window(x_start, 0, x_start + width - 1, 171).await {
-            error!("Failed to set address window for stripe {}", i);
-            continue;
-        }
-
-        // Fill the stripe area with the color
-        if let Err(_e) = fill_current_window(display, *color, x_start, 0, width, 172).await {
+        if let Err(_e) = display.fill_rect(x_start, 0, width, 172, color).await {
             error!("Failed to fill stripe {}", i);
         }
 
@@ -275,18 +183,17 @@ async fn draw_color_stripes<SPI, DC, RST>(
     }
 }
 
-// Draw checkerboard pattern
-async fn draw_checkerboard<SPI, DC, RST>(
-    display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>
-) where
+/// Test 3: Checkerboard pattern (from direct-spi example)
+async fn test_checkerboard<SPI, DC, RST>(display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>)
+where
     SPI: embedded_hal_async::spi::SpiDevice,
     DC: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
     RST: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
 {
-    info!("Drawing checkerboard pattern");
+    info!("Drawing checkerboard pattern...");
 
     // Clear screen first
-    let _ = display.fill_color(Rgb565::BLACK).await;
+    let _ = display.fill_screen(BLACK).await;
     embassy_time::Timer::after_millis(100).await;
 
     let square_size = 20; // 20x20 pixel squares
@@ -307,116 +214,287 @@ async fn draw_checkerboard<SPI, DC, RST>(
             let x = col * square_size;
             let y = row * square_size;
 
-            info!("Drawing white square at ({}, {})", x, y);
-
-            // Set address window for this square
-            if let Err(_e) = display.set_address_window(
-                x, y,
-                x + square_size - 1,
-                y + square_size - 1
-            ).await {
-                error!("Failed to set address window for square at ({}, {})", x, y);
-                continue;
-            }
-
-            // Fill this square with white
-            if let Err(_e) = fill_current_window(display, Rgb565::WHITE, x, y, square_size, square_size).await {
+            if let Err(_e) = display.fill_rect(x, y, square_size, square_size, WHITE).await {
                 error!("Failed to fill square at ({}, {})", x, y);
             }
         }
 
         // Small delay per row to make drawing visible
-        embassy_time::Timer::after_millis(100).await;
+        embassy_time::Timer::after_millis(50).await;
     }
 }
 
-// Draw nested rectangles
-async fn draw_nested_rectangles<SPI, DC, RST>(
-    display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>
-) where
+/// Test 4: Four direction rotation positioning test
+async fn test_direction_markers<SPI, DC, RST>(display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>)
+where
     SPI: embedded_hal_async::spi::SpiDevice,
     DC: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
     RST: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
 {
-    info!("Drawing nested rectangles pattern");
+    #[cfg(feature = "software-rotation")]
+    {
+        use gc9307_async::Rotation;
 
-    // Clear screen first
-    let _ = display.fill_color(Rgb565::BLACK).await;
-    embassy_time::Timer::after_millis(100).await;
+        let rotations = [Rotation::Deg0, Rotation::Deg90, Rotation::Deg180, Rotation::Deg270];
 
-    let colors = [
-        Rgb565::RED,
-        Rgb565::GREEN,
-        Rgb565::BLUE,
-        Rgb565::YELLOW,
-        Rgb565::CYAN,
-        Rgb565::MAGENTA,
-    ];
+        for &rotation in rotations.iter() {
+            let angle = rotation.degrees();
+            info!("Setting rotation to {}°", angle);
+            display.set_rotation(rotation);
 
-    let margin = 15; // Margin between rectangles
+            let (logical_width, logical_height) = display.logical_dimensions();
+            info!("Logical dimensions: {}x{}", logical_width, logical_height);
 
-    info!("Drawing {} nested rectangles with {} pixel margins", colors.len(), margin);
+            // Clear screen
+            let _ = display.fill_screen(BLACK).await;
+            embassy_time::Timer::after_millis(50).await;
 
-    // Draw from outside to inside
-    for (i, color) in colors.iter().enumerate() {
-        let offset = i as u16 * margin;
+            // Draw positioning markers with angle text
+            draw_rotation_markers(display, logical_width, logical_height, angle).await;
 
-        // Calculate rectangle bounds
-        let x = offset;
-        let y = offset;
-        let width = if 320 > offset * 2 { 320 - offset * 2 } else { 0 };
-        let height = if 172 > offset * 2 { 172 - offset * 2 } else { 0 };
-
-        // Skip if rectangle is too small
-        if width < 6 || height < 6 {
-            info!("Skipping rectangle {} - too small", i);
-            break;
+            // Hold for 2 seconds to observe the angle text
+            embassy_time::Timer::after_millis(2000).await;
         }
 
-        info!("Drawing rectangle {}: ({}, {}) size {}x{}", i, x, y, width, height);
+        // Reset to default rotation
+        display.set_rotation(Rotation::Deg0);
+    }
 
-        // Draw rectangle border by drawing 4 lines
-        let border_width = 3;
+    #[cfg(not(feature = "software-rotation"))]
+    {
+        info!("Drawing static direction markers...");
 
-        // Top border
-        for dy in 0..border_width {
-            if let Err(_e) = display.set_address_window(x, y + dy, x + width - 1, y + dy).await {
-                error!("Failed to set address window for top border");
-                continue;
-            }
-            let _ = fill_current_window(display, *color, x, y + dy, width, 1).await;
+        // Clear screen
+        let _ = display.fill_screen(BLACK).await;
+        embassy_time::Timer::after_millis(50).await;
+
+        let marker_size = 30;
+
+        // Top-left marker - RED
+        let _ = display.fill_rect(0, 0, marker_size, marker_size, RED).await;
+
+        // Top-right marker - GREEN
+        let _ = display.fill_rect(320 - marker_size, 0, marker_size, marker_size, GREEN).await;
+
+        // Bottom-left marker - BLUE
+        let _ = display.fill_rect(0, 172 - marker_size, marker_size, marker_size, BLUE).await;
+
+        // Bottom-right marker - WHITE
+        let _ = display.fill_rect(320 - marker_size, 172 - marker_size, marker_size, marker_size, WHITE).await;
+
+        // Center cross
+        let center_x = 320 / 2;
+        let center_y = 172 / 2;
+        let cross_size = 15;
+        let line_width = 2;
+
+        let _ = display.fill_rect(center_x - cross_size, center_y - line_width / 2, cross_size * 2, line_width, YELLOW).await;
+        let _ = display.fill_rect(center_x - line_width / 2, center_y - cross_size, line_width, cross_size * 2, YELLOW).await;
+    }
+
+    info!("Direction markers completed");
+}
+
+#[cfg(feature = "software-rotation")]
+/// Draw rotation markers for software rotation test with angle text
+async fn draw_rotation_markers<SPI, DC, RST>(
+    display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>,
+    logical_width: u16,
+    logical_height: u16,
+    angle: u16
+)
+where
+    SPI: embedded_hal_async::spi::SpiDevice,
+    DC: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
+    RST: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
+{
+    let marker_size = 25;
+
+    // Four corner markers to show rotation
+    // Top-left corner - RED
+    let _ = display.fill_rect(0, 0, marker_size, marker_size, RED).await;
+
+    // Top-right corner - GREEN
+    let _ = display.fill_rect(logical_width - marker_size, 0, marker_size, marker_size, GREEN).await;
+
+    // Bottom-left corner - BLUE
+    let _ = display.fill_rect(0, logical_height - marker_size, marker_size, marker_size, BLUE).await;
+
+    // Bottom-right corner - WHITE
+    let _ = display.fill_rect(
+        logical_width - marker_size,
+        logical_height - marker_size,
+        marker_size,
+        marker_size,
+        WHITE
+    ).await;
+
+    // Center cross for reference
+    let center_x = logical_width / 2;
+    let center_y = logical_height / 2;
+    let cross_size = 12;
+    let line_width = 3;
+
+    // Horizontal line
+    let _ = display.fill_rect(
+        center_x - cross_size,
+        center_y - line_width / 2,
+        cross_size * 2,
+        line_width,
+        YELLOW
+    ).await;
+
+    // Vertical line
+    let _ = display.fill_rect(
+        center_x - line_width / 2,
+        center_y - cross_size,
+        line_width,
+        cross_size * 2,
+        YELLOW
+    ).await;
+
+    // Draw angle text in center area with high contrast
+    #[cfg(feature = "font-rendering")]
+    {
+        let text_x = center_x - 20; // Center the text approximately
+        let text_y = center_y + 20; // Below the cross
+        let _ = display.draw_angle_text(text_x, text_y, angle, CYAN).await;
+    }
+
+    // Also draw angle in top-left area for better visibility
+    #[cfg(feature = "font-rendering")]
+    {
+        let text_x = 30; // Right of the red marker
+        let text_y = 5;  // Top area
+        let _ = display.draw_angle_text(text_x, text_y, angle, WHITE).await;
+    }
+}
+
+
+
+#[cfg(feature = "software-rotation")]
+/// Test 6: Software rotation demonstration (from software-rotation example)
+async fn test_software_rotation<SPI, DC, RST>(display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>)
+where
+    SPI: embedded_hal_async::spi::SpiDevice,
+    DC: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
+    RST: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
+{
+    info!("Starting software rotation demonstration...");
+
+    let rotations = [Rotation::Deg0, Rotation::Deg90, Rotation::Deg180, Rotation::Deg270];
+
+    for &rotation in rotations.iter() {
+        info!("Setting rotation to {}°", rotation.degrees());
+        display.set_rotation(rotation);
+
+        let (logical_width, logical_height) = display.logical_dimensions();
+        info!("Logical dimensions: {}x{}", logical_width, logical_height);
+
+        // Clear screen
+        let _ = display.fill_screen(BLACK).await;
+        embassy_time::Timer::after_millis(100).await;
+
+        // Draw orientation indicators
+        draw_rotation_indicators(display, rotation).await;
+
+        // Hold for 2 seconds to observe
+        embassy_time::Timer::after_millis(2000).await;
+    }
+
+    // Reset to default rotation
+    display.set_rotation(Rotation::Deg0);
+    info!("Software rotation demonstration completed!");
+}
+
+#[cfg(feature = "software-rotation")]
+/// Draw rotation indicators for software rotation test
+async fn draw_rotation_indicators<SPI, DC, RST>(
+    display: &mut GC9307C<'_, SPI, DC, RST, EmbassyTimer>,
+    rotation: Rotation
+)
+where
+    SPI: embedded_hal_async::spi::SpiDevice,
+    DC: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
+    RST: embedded_hal::digital::OutputPin<Error = core::convert::Infallible>,
+{
+    let (logical_width, logical_height) = display.logical_dimensions();
+
+    // Draw colored corners to show rotation
+    let corner_size = 30;
+
+    // Top-left corner - RED
+    let _ = display.fill_rect(0, 0, corner_size, corner_size, RED).await;
+
+    // Top-right corner - GREEN
+    let _ = display.fill_rect(logical_width - corner_size, 0, corner_size, corner_size, GREEN).await;
+
+    // Bottom-left corner - BLUE
+    let _ = display.fill_rect(0, logical_height - corner_size, corner_size, corner_size, BLUE).await;
+
+    // Bottom-right corner - YELLOW
+    let _ = display.fill_rect(
+        logical_width - corner_size,
+        logical_height - corner_size,
+        corner_size,
+        corner_size,
+        YELLOW
+    ).await;
+
+    // Draw center cross
+    let center_x = logical_width / 2;
+    let center_y = logical_height / 2;
+    let cross_size = 20;
+    let line_width = 4;
+
+    // Horizontal line
+    let _ = display.fill_rect(
+        center_x - cross_size,
+        center_y - line_width / 2,
+        cross_size * 2,
+        line_width,
+        WHITE
+    ).await;
+
+    // Vertical line
+    let _ = display.fill_rect(
+        center_x - line_width / 2,
+        center_y - cross_size,
+        line_width,
+        cross_size * 2,
+        WHITE
+    ).await;
+
+    // Draw angle indicator in top-left area
+    let angle_text_color = match rotation {
+        Rotation::Deg0 => CYAN,
+        Rotation::Deg90 => MAGENTA,
+        Rotation::Deg180 => YELLOW,
+        Rotation::Deg270 => WHITE,
+    };
+
+    // Simple angle indicator - draw small rectangles to represent the angle
+    let indicator_x = 40;
+    let indicator_y = 40;
+    let bar_width = 20;
+    let bar_height = 4;
+
+    match rotation {
+        Rotation::Deg0 => {
+            // Horizontal bar
+            let _ = display.fill_rect(indicator_x, indicator_y, bar_width, bar_height, angle_text_color).await;
         }
-
-        // Bottom border
-        for dy in 0..border_width {
-            let bottom_y = y + height - 1 - dy;
-            if let Err(_e) = display.set_address_window(x, bottom_y, x + width - 1, bottom_y).await {
-                error!("Failed to set address window for bottom border");
-                continue;
-            }
-            let _ = fill_current_window(display, *color, x, bottom_y, width, 1).await;
+        Rotation::Deg90 => {
+            // Vertical bar
+            let _ = display.fill_rect(indicator_x, indicator_y, bar_height, bar_width, angle_text_color).await;
         }
-
-        // Left border
-        for dx in 0..border_width {
-            if let Err(_e) = display.set_address_window(x + dx, y, x + dx, y + height - 1).await {
-                error!("Failed to set address window for left border");
-                continue;
-            }
-            let _ = fill_current_window(display, *color, x + dx, y, 1, height).await;
+        Rotation::Deg180 => {
+            // Horizontal bar (same as 0° but different color)
+            let _ = display.fill_rect(indicator_x, indicator_y, bar_width, bar_height, angle_text_color).await;
         }
-
-        // Right border
-        for dx in 0..border_width {
-            let right_x = x + width - 1 - dx;
-            if let Err(_e) = display.set_address_window(right_x, y, right_x, y + height - 1).await {
-                error!("Failed to set address window for right border");
-                continue;
-            }
-            let _ = fill_current_window(display, *color, right_x, y, 1, height).await;
+        Rotation::Deg270 => {
+            // Vertical bar (same as 90° but different color)
+            let _ = display.fill_rect(indicator_x, indicator_y, bar_height, bar_width, angle_text_color).await;
         }
-
-        // Delay to make drawing visible
-        embassy_time::Timer::after_millis(400).await;
     }
 }
