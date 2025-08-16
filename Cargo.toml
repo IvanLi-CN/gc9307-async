@@ -29,4 +29,12 @@ opt-level = 's'
 overflow-checks = false
 
 [features]
+default = ["async"]
 async = ["dep:embedded-hal-async"]
+embassy-time = ["dep:embassy-time"]
+software-rotation = []
+font-rendering = []
+
+[dependencies.embassy-time]
+version = "0.3"
+optional = true
