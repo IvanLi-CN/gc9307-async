@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="172" viewBox="0 0 320 172" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="320" height="172" fill="#000000"/>
+
+  <!-- 7 Vertical Color Stripes (each ~45 pixels wide) -->
+  <g>
+    <!-- Stripe 0: Red (x=0, width=45) -->
+    <rect x="0" y="0" width="45" height="172" fill="#FF0000"/>
+    
+    <!-- Stripe 1: Orange (x=45, width=45) -->
+    <rect x="45" y="0" width="45" height="172" fill="#FF8000"/>
+    
+    <!-- Stripe 2: Yellow (x=90, width=45) -->
+    <rect x="90" y="0" width="45" height="172" fill="#FFFF00"/>
+    
+    <!-- Stripe 3: Green (x=135, width=45) -->
+    <rect x="135" y="0" width="45" height="172" fill="#00FF00"/>
+    
+    <!-- Stripe 4: Cyan (x=180, width=45) -->
+    <rect x="180" y="0" width="45" height="172" fill="#00FFFF"/>
+    
+    <!-- Stripe 5: Blue (x=225, width=45) -->
+    <rect x="225" y="0" width="45" height="172" fill="#0000FF"/>
+    
+    <!-- Stripe 6: Magenta (x=270, width=50) -->
+    <rect x="270" y="0" width="50" height="172" fill="#FF00FF"/>
+  </g>
+  
+  <!-- Labels for each stripe -->
+  <text x="22" y="15" font-family="monospace" font-size="8" fill="#FFFFFF" text-anchor="middle">R</text>
+  <text x="67" y="15" font-family="monospace" font-size="8" fill="#000000" text-anchor="middle">O</text>
+  <text x="112" y="15" font-family="monospace" font-size="8" fill="#000000" text-anchor="middle">Y</text>
+  <text x="157" y="15" font-family="monospace" font-size="8" fill="#000000" text-anchor="middle">G</text>
+  <text x="202" y="15" font-family="monospace" font-size="8" fill="#000000" text-anchor="middle">C</text>
+  <text x="247" y="15" font-family="monospace" font-size="8" fill="#FFFFFF" text-anchor="middle">B</text>
+  <text x="295" y="15" font-family="monospace" font-size="8" fill="#000000" text-anchor="middle">M</text>
+</svg>

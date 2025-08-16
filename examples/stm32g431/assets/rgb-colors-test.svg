@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="960" height="172" viewBox="0 0 960 172" xmlns="http://www.w3.org/2000/svg">
+  <!-- Three screens showing RGB color fills -->
+  
+  <!-- Red Fill Screen -->
+  <g>
+    <rect x="0" y="0" width="320" height="172" fill="#FF0000"/>
+    <text x="160" y="90" font-family="monospace" font-size="16" fill="#FFFFFF" text-anchor="middle">RED</text>
+  </g>
+  
+  <!-- Green Fill Screen -->
+  <g>
+    <rect x="320" y="0" width="320" height="172" fill="#00FF00"/>
+    <text x="480" y="90" font-family="monospace" font-size="16" fill="#000000" text-anchor="middle">GREEN</text>
+  </g>
+  
+  <!-- Blue Fill Screen -->
+  <g>
+    <rect x="640" y="0" width="320" height="172" fill="#0000FF"/>
+    <text x="800" y="90" font-family="monospace" font-size="16" fill="#FFFFFF" text-anchor="middle">BLUE</text>
+  </g>
+  
+  <!-- Labels below each screen -->
+  <text x="160" y="190" font-family="sans-serif" font-size="12" fill="#000000" text-anchor="middle">Red Fill (0.92s)</text>
+  <text x="480" y="190" font-family="sans-serif" font-size="12" fill="#000000" text-anchor="middle">Green Fill (0.92s)</text>
+  <text x="800" y="190" font-family="sans-serif" font-size="12" fill="#000000" text-anchor="middle">Blue Fill (0.92s)</text>
+</svg>

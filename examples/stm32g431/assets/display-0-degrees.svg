@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="172" viewBox="0 0 320 172" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="320" height="172" fill="#000000"/>
+
+  <!-- Display area (320x172 - Landscape Default) -->
+  <g>
+    <!-- Colored corner markers (30x30 each) -->
+    <!-- Top-left corner - Red -->
+    <rect x="0" y="0" width="30" height="30" fill="#FF0000"/>
+    <!-- Top-right corner - Green -->
+    <rect x="290" y="0" width="30" height="30" fill="#00FF00"/>
+    <!-- Bottom-right corner - Blue -->
+    <rect x="290" y="142" width="30" height="30" fill="#0000FF"/>
+    <!-- Bottom-left corner - Yellow -->
+    <rect x="0" y="142" width="30" height="30" fill="#FFFF00"/>
+    
+    <!-- Center crosshair (yellow) -->
+    <!-- Horizontal line: center_x=160, center_y=86, cross_size=12, line_width=3 -->
+    <rect x="148" y="84" width="24" height="3" fill="#FFFF00"/>
+    <!-- Vertical line -->
+    <rect x="158" y="74" width="3" height="24" fill="#FFFF00"/>
+
+    <!-- Angle text in center area (cyan) - below the cross -->
+    <text x="140" y="106" font-family="monospace" font-size="10" fill="#00FFFF">0°</text>
+
+    <!-- Angle text in top-left area (white) - for better visibility -->
+    <text x="30" y="15" font-family="monospace" font-size="10" fill="#FFFFFF">0°</text>
+  </g>
+</svg>

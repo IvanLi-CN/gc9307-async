@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="172" viewBox="0 0 320 172" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="320" height="172" fill="#000000"/>
+
+  <!-- 16x8 Checkerboard Pattern (20x21.5 pixel squares) -->
+  <g>
+    <!-- Row 0 -->
+    <rect x="0" y="0" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="40" y="0" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="80" y="0" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="120" y="0" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="160" y="0" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="200" y="0" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="240" y="0" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="280" y="0" width="20" height="21" fill="#FFFFFF"/>
+    
+    <!-- Row 1 -->
+    <rect x="20" y="21" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="60" y="21" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="100" y="21" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="140" y="21" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="180" y="21" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="220" y="21" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="260" y="21" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="300" y="21" width="20" height="21" fill="#FFFFFF"/>
+    
+    <!-- Row 2 -->
+    <rect x="0" y="42" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="40" y="42" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="80" y="42" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="120" y="42" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="160" y="42" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="200" y="42" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="240" y="42" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="280" y="42" width="20" height="21" fill="#FFFFFF"/>
+    
+    <!-- Row 3 -->
+    <rect x="20" y="63" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="60" y="63" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="100" y="63" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="140" y="63" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="180" y="63" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="220" y="63" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="260" y="63" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="300" y="63" width="20" height="21" fill="#FFFFFF"/>
+    
+    <!-- Row 4 -->
+    <rect x="0" y="84" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="40" y="84" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="80" y="84" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="120" y="84" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="160" y="84" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="200" y="84" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="240" y="84" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="280" y="84" width="20" height="21" fill="#FFFFFF"/>
+    
+    <!-- Row 5 -->
+    <rect x="20" y="105" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="60" y="105" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="100" y="105" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="140" y="105" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="180" y="105" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="220" y="105" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="260" y="105" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="300" y="105" width="20" height="21" fill="#FFFFFF"/>
+    
+    <!-- Row 6 -->
+    <rect x="0" y="126" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="40" y="126" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="80" y="126" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="120" y="126" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="160" y="126" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="200" y="126" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="240" y="126" width="20" height="21" fill="#FFFFFF"/>
+    <rect x="280" y="126" width="20" height="21" fill="#FFFFFF"/>
+    
+    <!-- Row 7 -->
+    <rect x="20" y="147" width="20" height="25" fill="#FFFFFF"/>
+    <rect x="60" y="147" width="20" height="25" fill="#FFFFFF"/>
+    <rect x="100" y="147" width="20" height="25" fill="#FFFFFF"/>
+    <rect x="140" y="147" width="20" height="25" fill="#FFFFFF"/>
+    <rect x="180" y="147" width="20" height="25" fill="#FFFFFF"/>
+    <rect x="220" y="147" width="20" height="25" fill="#FFFFFF"/>
+    <rect x="260" y="147" width="20" height="25" fill="#FFFFFF"/>
+    <rect x="300" y="147" width="20" height="25" fill="#FFFFFF"/>
+  </g>
+</svg>

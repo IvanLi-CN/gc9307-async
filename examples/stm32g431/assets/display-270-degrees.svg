@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="172" height="320" viewBox="0 0 172 320" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="172" height="320" fill="#000000"/>
+
+  <!-- Display area (172x320 - Inverted Portrait) -->
+  <g>
+    <!-- Colored corner markers (30x30 each) - 270° rotated positions -->
+    <!-- Top-left corner - Green (was top-right) -->
+    <rect x="0" y="0" width="30" height="30" fill="#00FF00"/>
+    <!-- Top-right corner - Blue (was bottom-right) -->
+    <rect x="142" y="0" width="30" height="30" fill="#0000FF"/>
+    <!-- Bottom-right corner - Yellow (was bottom-left) -->
+    <rect x="142" y="290" width="30" height="30" fill="#FFFF00"/>
+    <!-- Bottom-left corner - Red (was top-left) -->
+    <rect x="0" y="290" width="30" height="30" fill="#FF0000"/>
+    
+    <!-- Center crosshair (yellow) -->
+    <!-- Horizontal line: center_x=86, center_y=160, cross_size=12, line_width=3 -->
+    <rect x="74" y="158" width="24" height="3" fill="#FFFF00"/>
+    <!-- Vertical line -->
+    <rect x="84" y="148" width="3" height="24" fill="#FFFF00"/>
+
+    <!-- Angle text in center area (cyan) - below the cross -->
+    <text x="61" y="180" font-family="monospace" font-size="10" fill="#00FFFF">270°</text>
+
+    <!-- Angle text in top-left area (white) - for better visibility -->
+    <text x="30" y="15" font-family="monospace" font-size="10" fill="#FFFFFF">270°</text>
+  </g>
+</svg>
