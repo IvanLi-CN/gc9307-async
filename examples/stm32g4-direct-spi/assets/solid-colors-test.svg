@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="344" height="640" viewBox="0 0 344 640" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="344" height="640" fill="#f0f0f0" stroke="#333" stroke-width="2"/>
+  
+  <!-- Title -->
+  <text x="172" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#333">
+    Solid Colors Test - 8 Colors Cycle
+  </text>
+  
+  <!-- Subtitle -->
+  <text x="172" y="50" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#666">
+    GC9307 172×320 Display - Each color fills entire screen for 1 second
+  </text>
+  
+  <!-- Color grid: 2 columns × 4 rows -->
+  
+  <!-- Row 1: RED and GREEN -->
+  <g>
+    <rect x="20" y="80" width="140" height="120" fill="#FF0000" stroke="#333" stroke-width="1"/>
+    <text x="90" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      RED
+    </text>
+    <text x="90" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      0xF800
+    </text>
+    
+    <rect x="184" y="80" width="140" height="120" fill="#00FF00" stroke="#333" stroke-width="1"/>
+    <text x="254" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="black">
+      GREEN
+    </text>
+    <text x="254" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="black">
+      0x07E0
+    </text>
+  </g>
+  
+  <!-- Row 2: BLUE and WHITE -->
+  <g>
+    <rect x="20" y="220" width="140" height="120" fill="#0000FF" stroke="#333" stroke-width="1"/>
+    <text x="90" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      BLUE
+    </text>
+    <text x="90" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      0x001F
+    </text>
+    
+    <rect x="184" y="220" width="140" height="120" fill="#FFFFFF" stroke="#333" stroke-width="1"/>
+    <text x="254" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="black">
+      WHITE
+    </text>
+    <text x="254" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="black">
+      0xFFFF
+    </text>
+  </g>
+  
+  <!-- Row 3: BLACK and YELLOW -->
+  <g>
+    <rect x="20" y="360" width="140" height="120" fill="#000000" stroke="#333" stroke-width="1"/>
+    <text x="90" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      BLACK
+    </text>
+    <text x="90" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      0x0000
+    </text>
+    
+    <rect x="184" y="360" width="140" height="120" fill="#FFFF00" stroke="#333" stroke-width="1"/>
+    <text x="254" y="425" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="black">
+      YELLOW
+    </text>
+    <text x="254" y="440" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="black">
+      0xFFE0
+    </text>
+  </g>
+  
+  <!-- Row 4: CYAN and MAGENTA -->
+  <g>
+    <rect x="20" y="500" width="140" height="120" fill="#00FFFF" stroke="#333" stroke-width="1"/>
+    <text x="90" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="black">
+      CYAN
+    </text>
+    <text x="90" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="black">
+      0x07FF
+    </text>
+    
+    <rect x="184" y="500" width="140" height="120" fill="#FF00FF" stroke="#333" stroke-width="1"/>
+    <text x="254" y="565" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white">
+      MAGENTA
+    </text>
+    <text x="254" y="580" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+      0xF81F
+    </text>
+  </g>
+  
+  <!-- Footer note -->
+  <text x="172" y="630" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#666">
+    Each color displayed for 1000ms in continuous cycle
+  </text>
+</svg>

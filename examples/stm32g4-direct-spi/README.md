@@ -66,6 +66,54 @@ Draws black and white checkerboard pattern:
 
 **Purpose**: Verify pixel precision and complex pattern rendering
 
+## Visual Display Examples
+
+The following images show the expected display output for each test mode:
+
+### Solid Colors Display
+
+![Solid Colors Test](assets/solid-colors-test.svg)
+
+This test cycles through 8 solid colors, each filling the entire 172×320 display for 1 second:
+
+- **Red** (0xF800) - Pure red fill
+- **Green** (0x07E0) - Pure green fill
+- **Blue** (0x001F) - Pure blue fill
+- **White** (0xFFFF) - Pure white fill
+- **Black** (0x0000) - Pure black fill
+- **Yellow** (0xFFE0) - Pure yellow fill
+- **Cyan** (0x07FF) - Pure cyan fill
+- **Magenta** (0xF81F) - Pure magenta fill
+
+**Performance**: Each color fill demonstrates full-screen rendering capability with direct SPI communication.
+
+### Vertical Color Stripes Display
+
+![Color Stripes Test](assets/color-stripes-test.svg)
+
+This test draws 7 vertical color stripes with progressive rendering:
+
+- **Stripe Width**: ~24.6 pixels each (172 ÷ 7)
+- **Colors**: Red, Green, Blue, Yellow, Cyan, Magenta, White
+- **Drawing Interval**: 300ms between stripes
+- **Last Stripe**: Fills remaining width to screen edge
+
+**Purpose**: Validates address window setting and rectangle fill operations with precise coordinate control.
+
+### Checkerboard Pattern Display
+
+![Checkerboard Test](assets/checkerboard-test.svg)
+
+This test creates a black and white checkerboard pattern:
+
+- **Grid Size**: 8 columns × 16 rows
+- **Square Size**: 20×20 pixels each
+- **Pattern Logic**: `(row + col) % 2 == 0` determines white squares
+- **Background**: Black (0x0000) with white (0xFFFF) squares
+- **Drawing Speed**: 50ms delay per row for visual feedback
+
+**Purpose**: Tests pixel-perfect rendering accuracy and complex pattern generation.
+
 ## Build and Run
 
 ### Compilation
