@@ -170,10 +170,10 @@ Comprehensive examples in the `examples/` directory:
 - **Features**: All test patterns, software rotation, performance benchmarks
 - **Hardware**: STM32G431CB + GC9307 172×320 display
 
-### Software Rotation Reference
+### Rotation Direct SPI Reference
 
-- **Path**: `examples/stm32g4-software-rotation/`
-- **Features**: Pure software rotation demonstration with visual indicators
+- **Path**: `examples/stm32g4-rotation-direct-spi/`
+- **Features**: Direct SPI rotation demonstration with visual indicators
 - **Documentation**: Complete with SVG diagrams
 
 ## 🔧 Hardware Setup

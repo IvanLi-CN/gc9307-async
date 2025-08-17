@@ -1,10 +1,10 @@
-# GC9307 Software Rotation Example
+# GC9307 Rotation Direct SPI Example
 
-This example demonstrates pure software-based screen rotation for the GC9307 display controller with high-quality 12×16 pixel font rendering for rotation angle display.
+This example demonstrates screen rotation for the GC9307 display controller using direct SPI communication with high-quality 12×16 pixel font rendering for rotation angle display.
 
 ## Features
 
-- **Pure Software Rotation**: Implements rotation through coordinate transformation, without modifying GC9307 registers
+- **Direct SPI Rotation**: Implements rotation through coordinate transformation using direct SPI communication
 - **High-Quality Font Rendering**: 12×16 pixel bitmap font for clear angle display (0°, 90°, 180°, 270°)
 - **Orientation Test Pattern**: Displays a crosshair with colored borders to visualize rotation
 - **Automatic Rotation Cycle**: Cycles through 0°, 90°, 180°, 270° rotations every 2.5 seconds

@@ -1,5 +1,5 @@
 [package]
-name = "gc9307_software_rotation"
+name = "gc9307_rotation_direct_spi"
 version = "0.1.0"
 edition = "2021"
 
